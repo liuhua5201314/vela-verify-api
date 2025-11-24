@@ -1,0 +1,13 @@
+name = "vela-verify-api"
+main = "worker.js"
+compatibility_date = "2024-11-24"
+
+# KV 命名空间绑定
+[[kv_namespaces]]
+binding = "KV"
+id = "6b681f8688364d33b1dbb71fe8c14570"
+
+# 生产环境路由
+[[routes]]
+pattern = "vela-verify-api.zzxx20182221.workers.dev/*"
+zone_name = "zzxx20182221.workers.dev"
