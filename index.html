@@ -490,9 +490,9 @@
         
         // 验证卡密
         async function verifyCard() {
-            const cardCode = document.getElementById('cardCode').value.trim();
+            const cardNumber = document.getElementById('cardCode').value.trim();
             
-            if (!cardCode) {
+            if (!cardNumber) {
                 showError('cardCode', 'cardCodeError', '请输入卡密');
                 return;
             }
@@ -505,13 +505,13 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ cardCode: cardCode })
+                    body: JSON.stringify({ cardNumber: cardNumber })
                 });
                 
                 const result = await response.json();
                 
                 if (result.valid) {
-                    verifiedCardCode = cardCode;
+                    verifiedCardCode = cardNumber;
                     goToStep(2);
                 } else {
                     showError('cardCode', 'cardCodeError', result.message || '卡密验证失败');
@@ -546,7 +546,10 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ deviceCode: deviceCode })
+                    body: JSON.stringify({ 
+                        deviceCode: deviceCode,
+                        cardNumber: verifiedCardCode  // 添加卡密参数
+                    })
                 });
                 
                 const result = await response.json();
