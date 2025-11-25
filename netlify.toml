@@ -1,0 +1,10 @@
+[[redirects]]
+  from = "/api/*"
+  to = "https://vela-verify-api.zzxx20182221.workers.dev/:splat"
+  status = 200
+  force = true
+
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
