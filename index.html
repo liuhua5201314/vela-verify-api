@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>软件激活中心</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #e2e8f0;
+        }
+        
+        .container {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(94, 234, 212, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 15px rgba(94, 234, 212, 0.1);
+            width: 100%;
+            max-width: 450px;
+            padding: 40px 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(94, 234, 212, 0.1) 0%, transparent 70%);
+            z-index: -1;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #5eead4;
+            font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: 600;
+            text-shadow: 0 0 10px rgba(94, 234, 212, 0.3);
+        }
+        
+        .header p {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+        
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            position: relative;
+        }
+        
+        .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #1e293b;
+            z-index: 0;
+        }
+        
+        .progress-line {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #0ea5e9, #5eead4);
+            z-index: 1;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+        
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #1e293b;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .step.active .step-number {
+            background: linear-gradient(135deg, #0ea5e9, #5eead4);
+            color: #0f172a;
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(94, 234, 212, 0.4);
+        }
+        
+        .step.completed .step-number {
+            background: linear-gradient(135deg, #0ea5e9, #5eead4);
+            color: #0f172a;
+        }
+        
+        .step-label {
+            font-size: 12px;
+            color: #94a3b8;
+            text-align: center;
+        }
+        
+        .step.active .step-label {
+            color: #5eead4;
+            font-weight: 500;
+        }
+        
+        .form-container {
+            min-height: 200px;
+        }
+        
+        .form-step {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+        
+        .form-step.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #e2e8f0;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(94, 234, 212, 0.3);
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            color: #f8fafc;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #5eead4;
+            box-shadow: 0 0 0 3px rgba(94, 234, 212, 0.2);
+        }
+        
+        .input-group input.error {
+            border-color: #f87171;
+            box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.2);
+        }
+        
+        .error-message {
+            color: #f87171;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .error-message.show {
+            display: block;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #0ea5e9, #5eead4);
+            color: #0f172a;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(14, 165, 233, 0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(rgba(255,255,255,0.1), transparent);
+            transform: rotate(30deg);
+            transition: all 0.6s ease;
+        }
+        
+        .btn:hover::after {
+            transform: rotate(30deg) translate(20%, 20%);
+        }
+        
+        .btn-secondary {
+            background: rgba(30, 41, 59, 0.7);
+            color: #5eead4;
+            border: 1px solid rgba(94, 234, 212, 0.3);
+        }
+        
+        .activation-code-display {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(94, 234, 212, 0.1));
+            border: 1px dashed rgba(94, 234, 212, 0.4);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .activation-code-display h3 {
+            color: #94a3b8;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .activation-code {
+            font-size: 32px;
+            font-weight: bold;
+            color: #5eead4;
+            letter-spacing: 5px;
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 0 10px rgba(94, 234, 212, 0.3);
+        }
+        
+        .copy-btn {
+            margin-top: 15px;
+            padding: 8px 16px;
+            background: rgba(30, 41, 59, 0.7);
+            color: #5eead4;
+            border: 1px solid rgba(94, 234, 212, 0.3);
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .copy-btn:hover {
+            background: rgba(94, 234, 212, 0.1);
+        }
+        
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #0ea5e9, #5eead4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: scaleIn 0.5s ease;
+            box-shadow: 0 0 20px rgba(94, 234, 212, 0.3);
+        }
+        
+        @keyframes scaleIn {
+            from { transform: scale(0); }
+            to { transform: scale(1); }
+        }
+        
+        .success-icon::after {
+            content: '✓';
+            color: #0f172a;
+            font-size: 40px;
+            font-weight: bold;
+        }
+        
+        .info-box {
+            background: rgba(14, 165, 233, 0.1);
+            border-left: 4px solid #0ea5e9;
+            padding: 12px 16px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #cbd5e1;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(30, 41, 59, 0.5);
+            border-top: 3px solid #5eead4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .step-label {
+                font-size: 11px;
+            }
+            
+            .activation-code {
+                font-size: 24px;
+                letter-spacing: 3px;
+            }
+        }
+        
+        /* Glow effect for input fields on focus */
+        .input-group input:focus {
+            box-shadow: 0 0 0 3px rgba(94, 234, 212, 0.2), 0 0 15px rgba(94, 234, 212, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>软件激活中心</h1>
+            <p>卡密验证 → 设备码输入 → 激活码生成</p>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress-line" id="progressLine"></div>
+            <div class="step active" id="step1">
+                <div class="step-number">1</div>
+                <div class="step-label">验证卡密</div>
+            </div>
+            <div class="step" id="step2">
+                <div class="step-number">2</div>
+                <div class="step-label">输入设备码</div>
+            </div>
+            <div class="step" id="step3">
+                <div class="step-number">3</div>
+                <div class="step-label">激活码</div>
+            </div>
+        </div>
+        
+        <div class="form-container">
+            <!-- 步骤1: 验证卡密 -->
+            <div class="form-step active" id="formStep1">
+                <div class="info-box">
+                    💡 请输入您购买的卡密以获取激活资格
+                </div>
+                <div class="input-group">
+                    <label for="cardCode">卡密</label>
+                    <input autocomplete="off" id="cardCode" placeholder="请输入卡密" type="text"/>
+                    <div class="error-message" id="cardCodeError"></div>
+                </div>
+                <button class="btn" id="verifyCardBtn" onclick="verifyCard()">
+                    <span class="hidden" id="loading1">
+                        <span class="loading"></span>验证中...
+                    </span>
+                    <span id="btnText1">验证卡密</span>
+                </button>
+            </div>
+            
+            <!-- 步骤2: 输入设备码 -->
+            <div class="form-step" id="formStep2">
+                <div class="info-box">
+                    💡 请输入软件显示的5位数字设备码（如：12345）
+                </div>
+                <div class="input-group">
+                    <label for="deviceCode">设备码（5位数字）</label>
+                    <input autocomplete="off" id="deviceCode" maxlength="5" placeholder="请输入设备码" type="text"/>
+                    <div class="error-message" id="deviceCodeError"></div>
+                </div>
+                <button class="btn" id="generateCodeBtn" onclick="generateActivationCode()">
+                    <span class="hidden" id="loading2">
+                        <span class="loading"></span>生成中...
+                    </span>
+                    <span id="btnText2">生成激活码</span>
+                </button>
+                <button class="btn btn-secondary" onclick="goBackToStep1()" style="margin-top: 10px;">返回上一步</button>
+            </div>
+            
+            <!-- 步骤3: 显示激活码 -->
+            <div class="form-step" id="formStep3">
+                <div class="success-icon"></div>
+                <h2 style="text-align: center; color: #2c3e50; margin-bottom: 20px;">激活码已生成</h2>
+                <p style="text-align: center; color: #7f8c8d; font-size: 14px; margin-bottom: 20px;">请将以下激活码输入软件完成激活</p>
+                <div class="activation-code-display">
+                    <h3>激活码</h3>
+                    <div class="activation-code" id="activationCode">------</div>
+                    <button class="copy-btn" onclick="copyActivationCode()">复制激活码</button>
+                </div>
+                <button class="btn" onclick="resetProcess()">完成激活</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 配置: 已自动填写为您的 Worker URL
+        const WORKER_URL = 'https://vela-verify-api.zzxx20182221.workers.dev';
+        
+        // 显示/隐藏加载状态
+        function setLoading(buttonId, loadingId, btnTextId, isLoading) {
+            const button = document.getElementById(buttonId);
+            const loading = document.getElementById(loadingId);
+            const btnText = document.getElementById(btnTextId);
+            
+            if (isLoading) {
+                loading.classList.remove('hidden');
+                btnText.classList.add('hidden');
+                button.disabled = true;
+            } else {
+                loading.classList.add('hidden');
+                btnText.classList.remove('hidden');
+                button.disabled = false;
+            }
+        }
+        
+        // 显示错误信息
+        function showError(inputId, errorId, message) {
+            const input = document.getElementById(inputId);
+            const error = document.getElementById(errorId);
+            
+            input.classList.add('error');
+            error.textContent = message;
+            error.classList.add('show');
+            
+            setTimeout(() => {
+                input.classList.remove('error');
+                error.classList.remove('show');
+            }, 3000);
+        }
+        
+        // 验证卡密
+        async function verifyCard() {
+            const cardCode = document.getElementById('cardCode').value.trim();
+            
+            if (!cardCode) {
+                showError('cardCode', 'cardCodeError', '请输入卡密');
+                return;
+            }
+            
+            setLoading('verifyCardBtn', 'loading1', 'btnText1', true);
+            
+            try {
+                const response = await fetch(`${WORKER_URL}/verify-card`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ cardCode: cardCode })
+                });
+                
+                const result = await response.json();
+                
+                if (result.valid) {
+                    verifiedCardCode = cardCode;
+                    goToStep(2);
+                } else {
+                    showError('cardCode', 'cardCodeError', result.message || '卡密验证失败');
+                }
+            } catch (error) {
+                console.error('验证失败:', error);
+                showError('cardCode', 'cardCodeError', '网络错误，请稍后重试');
+            } finally {
+                setLoading('verifyCardBtn', 'loading1', 'btnText1', false);
+            }
+        }
+        
+        // 生成激活码
+        async function generateActivationCode() {
+            const deviceCode = document.getElementById('deviceCode').value.trim();
+            
+            if (!deviceCode) {
+                showError('deviceCode', 'deviceCodeError', '请输入设备码');
+                return;
+            }
+            
+            if (!/^\d{5}$/.test(deviceCode)) {
+                showError('deviceCode', 'deviceCodeError', '设备码必须是5位数字');
+                return;
+            }
+            
+            setLoading('generateCodeBtn', 'loading2', 'btnText2', true);
+            
+            try {
+                const response = await fetch(`${WORKER_URL}/generate-activation-code`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ deviceCode: deviceCode })
+                });
+                
+                const result = await response.json();
+                
+                if (result.valid) {
+                    document.getElementById('activationCode').textContent = result.activationCode;
+                    goToStep(3);
+                } else {
+                    showError('deviceCode', 'deviceCodeError', result.message || '激活码生成失败');
+                }
+            } catch (error) {
+                console.error('生成失败:', error);
+                showError('deviceCode', 'deviceCodeError', '网络错误，请稍后重试');
+            } finally {
+                setLoading('generateCodeBtn', 'loading2', 'btnText2', false);
+            }
+        }
+        
+        // 切换到指定步骤
+        function goToStep(step) {
+            document.getElementById(`formStep${currentStep}`).classList.remove('active');
+            document.getElementById(`step${currentStep}`).classList.remove('active');
+            
+            if (step > currentStep) {
+                document.getElementById(`step${currentStep}`).classList.add('completed');
+            }
+            
+            currentStep = step;
+            document.getElementById(`formStep${step}`).classList.add('active');
+            document.getElementById(`step${step}`).classList.add('active');
+            
+            updateProgressBar();
+            
+            if (step === 2) {
+                document.getElementById('deviceCode').value = '';
+            }
+        }
+        
+        // 返回第一步
+        function goBackToStep1() {
+            goToStep(1);
+        }
+        
+        // 更新进度条
+        function updateProgressBar() {
+            const progressLine = document.getElementById('progressLine');
+            const progress = ((currentStep - 1) / 2) * 100;
+            progressLine.style.width = progress + '%';
+        }
+        
+        // 复制激活码
+        function copyActivationCode() {
+            const activationCode = document.getElementById('activationCode').textContent;
+            
+            navigator.clipboard.writeText(activationCode).then(() => {
+                const copyBtn = event.target;
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = '已复制！';
+                copyBtn.style.background = 'rgba(94, 234, 212, 0.2)';
+                
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                    copyBtn.style.background = 'rgba(30, 41, 59, 0.7)';
+                }, 2000);
+            }).catch(err => {
+                console.error('复制失败:', err);
+                alert('复制失败，请手动复制');
+            });
+        }
+        
+        // 重置流程
+        function resetProcess() {
+            verifiedCardCode = '';
+            document.getElementById('cardCode').value = '';
+            document.getElementById('deviceCode').value = '';
+            
+            document.querySelectorAll('.step').forEach(step => {
+                step.classList.remove('active', 'completed');
+            });
+            
+            currentStep = 1;
+            document.getElementById('step1').classList.add('active');
+            document.getElementById('formStep1').classList.add('active');
+            
+            updateProgressBar();
+        }
+        
+        // 监听回车键
+        document.getElementById('cardCode').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                verifyCard();
+            }
+        });
+        
+        document.getElementById('deviceCode').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                generateActivationCode();
+            }
+        });
+        
+        // 设备码输入限制
+        document.getElementById('deviceCode').addEventListener('input', function(e) {
+            this.value = this.value.replace(/\D/g, '');
+        });
+        
+        // 初始化
+        let currentStep = 1;
+        let verifiedCardCode = '';
+        
+        // 页面加载时初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            updateProgressBar();
+        });
+    </script>
+
+</body></html>
