@@ -510,11 +510,11 @@
                 
                 const result = await response.json();
                 
-                if (result.valid) {
+                if (result.success) {  // ⭐ 修改为 result.success
                     verifiedCardCode = cardNumber;
                     goToStep(2);
                 } else {
-                    showError('cardCode', 'cardCodeError', result.message || '卡密验证失败');
+                    showError('cardCode', 'cardCodeError', result.error || '卡密验证失败');
                 }
             } catch (error) {
                 console.error('验证失败:', error);
@@ -548,17 +548,17 @@
                     },
                     body: JSON.stringify({ 
                         deviceCode: deviceCode,
-                        cardNumber: verifiedCardCode  // 添加卡密参数
+                        cardNumber: verifiedCardCode
                     })
                 });
                 
                 const result = await response.json();
                 
-                if (result.valid) {
+                if (result.success) {  // ⭐ 修改为 result.success
                     document.getElementById('activationCode').textContent = result.activationCode;
                     goToStep(3);
                 } else {
-                    showError('deviceCode', 'deviceCodeError', result.message || '激活码生成失败');
+                    showError('deviceCode', 'deviceCodeError', result.error || '激活码生成失败');
                 }
             } catch (error) {
                 console.error('生成失败:', error);
